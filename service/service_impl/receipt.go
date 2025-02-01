@@ -2,20 +2,22 @@ package service_impl
 
 import (
 	"github.com/dlccyes/receipt-processor/model"
-	"github.com/google/uuid"
 )
 
 type receiptServiceImpl struct{}
 
-var receipts = make(map[string]*model.Receipt)
+var (
+	id       = int64(0)
+	receipts = make(map[int64]*model.Receipt)
+)
 
-func (*receiptServiceImpl) SaveReceipt(receipt *model.Receipt) string {
-	id := uuid.New().String()
+func (*receiptServiceImpl) SaveReceipt(receipt *model.Receipt) int64 {
+	id += 1
 	receipts[id] = receipt
 	return id
 }
 
-func (*receiptServiceImpl) GetReceipt(id string) (*model.Receipt, bool) {
+func (*receiptServiceImpl) GetReceipt(id int64) (*model.Receipt, bool) {
 	if receipt, exists := receipts[id]; exists {
 		return receipt, true
 	}

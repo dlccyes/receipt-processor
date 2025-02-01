@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/dlccyes/receipt-processor/model"
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,7 @@ func (h *Handler) ProcessReceipt(c *gin.Context) {
 
 	receiptID := h.ReceiptService.SaveReceipt(&receipt)
 
-	c.JSON(http.StatusOK, ReceiptIDResponse{ID: receiptID})
+	c.JSON(http.StatusOK, ReceiptIDResponse{ID: strconv.FormatInt(receiptID, 10)})
 }
 
 func validateReceipt(receipt model.Receipt) error {
