@@ -3,17 +3,16 @@ package handler
 import (
 	"net/http"
 
-	"github.com/dlccyes/receipt-processor/model"
 	"github.com/dlccyes/receipt-processor/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func (s *Suite) TestProcessReceipt() {
-	receipt := &model.Receipt{
+	receipt := &processReceiptReq{
 		Retailer:     "test seller",
 		PurchaseDate: "2022-01-02",
 		PurchaseTime: "18:01",
-		Items: []model.Item{
+		Items: []processReceiptReqItem{
 			{
 				ShortDescription: "test",
 				Price:            "5.00",
@@ -36,7 +35,7 @@ func (s *Suite) TestProcessReceipt() {
 func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 	testCases := []struct {
 		caseName string
-		receipt  *model.Receipt
+		receipt  *processReceiptReq
 	}{
 		{
 			caseName: "nil receipt",
@@ -44,14 +43,14 @@ func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 		},
 		{
 			caseName: "empty receipt",
-			receipt:  &model.Receipt{},
+			receipt:  &processReceiptReq{},
 		},
 		{
 			caseName: "no retailer",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -62,10 +61,10 @@ func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 		},
 		{
 			caseName: "no purchase date",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -80,10 +79,10 @@ func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 		},
 		{
 			caseName: "no purchase time",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller",
 				PurchaseDate: "2022-01-02",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -98,21 +97,21 @@ func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 		},
 		{
 			caseName: "no items",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller",
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items:        []model.Item{},
+				Items:        []processReceiptReqItem{},
 				Total:        "10.00",
 			},
 		},
 		{
 			caseName: "no total",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller",
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -136,15 +135,45 @@ func (s *Suite) TestProcessReceipt_IncompleteReceipt() {
 func (s *Suite) TestProcessReceipt_InvalidReceiptFormat() {
 	testCases := []struct {
 		caseName string
-		receipt  *model.Receipt
+		receipt  *processReceiptReq
 	}{
 		{
 			caseName: "invalid retailer",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller @",
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
+					{
+						ShortDescription: "test",
+						Price:            "5.00",
+					},
+				},
+				Total: "5.00",
+			},
+		},
+		{
+			caseName: "invalid purchase date",
+			receipt: &processReceiptReq{
+				Retailer:     "test seller @",
+				PurchaseDate: "20220102",
+				PurchaseTime: "18:01",
+				Items: []processReceiptReqItem{
+					{
+						ShortDescription: "test",
+						Price:            "5.00",
+					},
+				},
+				Total: "5.00",
+			},
+		},
+		{
+			caseName: "invalid purchase time",
+			receipt: &processReceiptReq{
+				Retailer:     "test seller @",
+				PurchaseDate: "2022-01-02",
+				PurchaseTime: "1801",
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -155,11 +184,11 @@ func (s *Suite) TestProcessReceipt_InvalidReceiptFormat() {
 		},
 		{
 			caseName: "invalid total",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller @",
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "5.00",
@@ -170,11 +199,11 @@ func (s *Suite) TestProcessReceipt_InvalidReceiptFormat() {
 		},
 		{
 			caseName: "invalid item price",
-			receipt: &model.Receipt{
+			receipt: &processReceiptReq{
 				Retailer:     "test seller @",
 				PurchaseDate: "2022-01-02",
 				PurchaseTime: "18:01",
-				Items: []model.Item{
+				Items: []processReceiptReqItem{
 					{
 						ShortDescription: "test",
 						Price:            "abc",

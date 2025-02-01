@@ -1,54 +1,108 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/dlccyes/receipt-processor/model"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
-type ReceiptIDResponse struct {
+type processReceiptReq struct {
+	Retailer     string                  `json:"retailer" binding:"required"`
+	PurchaseDate string                  `json:"purchaseDate" binding:"required"`
+	PurchaseTime string                  `json:"purchaseTime" binding:"required"`
+	Items        []processReceiptReqItem `json:"items" binding:"required"`
+	Total        string                  `json:"total" binding:"required"`
+}
+
+type processReceiptReqItem struct {
+	ShortDescription string `json:"shortDescription" binding:"required"`
+	Price            string `json:"price" binding:"required"`
+}
+
+type processReceiptResp struct {
 	ID string `json:"id"`
 }
 
 var (
-	pricePattern    = regexp.MustCompile(`^\d+\.\d{2}$`)
 	retailerPattern = regexp.MustCompile(`^[\w\s\-&]+$`)
 )
 
 func (h *Handler) ProcessReceipt(c *gin.Context) {
-	var receipt model.Receipt
-	if err := c.ShouldBindJSON(&receipt); err != nil {
+	var req processReceiptReq
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The receipt is invalid: " + err.Error()})
 		return
 	}
-	if err := validateReceipt(receipt); err != nil {
+	if err := validateReceipt(req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The receipt is invalid: " + err.Error()})
 		return
 	}
+	receipt, err := toReceipt(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "The receipt is invalid: " + err.Error()})
+	}
+	receiptID := h.ReceiptService.SaveReceipt(receipt)
 
-	receiptID := h.ReceiptService.SaveReceipt(&receipt)
-
-	c.JSON(http.StatusOK, ReceiptIDResponse{ID: strconv.FormatInt(receiptID, 10)})
+	c.JSON(http.StatusOK, processReceiptResp{ID: strconv.FormatInt(receiptID, 10)})
 }
 
-func validateReceipt(receipt model.Receipt) error {
+func validateReceipt(receipt processReceiptReq) error {
 	if receipt.Retailer == "" || receipt.PurchaseDate == "" || receipt.PurchaseTime == "" || len(receipt.Items) == 0 || receipt.Total == "" {
 		return errors.New("incomplete receipt")
 	}
 	if !retailerPattern.MatchString(receipt.Retailer) {
 		return errors.New("invalid retailer format")
 	}
-	if !pricePattern.MatchString(receipt.Total) {
-		return errors.New("invalid total format")
-	}
 	for _, item := range receipt.Items {
-		if item.ShortDescription == "" || !pricePattern.MatchString(item.Price) {
-			return errors.New("invalid price format")
+		if item.ShortDescription == "" {
+			return errors.New("no short description")
 		}
 	}
 	return nil
+}
+
+func toReceipt(req processReceiptReq) (*model.Receipt, error) {
+	purchaseDate, err := time.Parse("2006-01-02", req.PurchaseDate)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid purchase date")
+	}
+	purchaseTime, err := time.Parse("15:04", req.PurchaseTime)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid purchase time")
+	}
+	total, err := strconv.ParseFloat(req.Total, 64)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid total format")
+	}
+	items, err := toReceiptItem(req.Items)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Receipt{
+		Retailer:     req.Retailer,
+		PurchaseDate: purchaseDate,
+		PurchaseTime: purchaseTime,
+		Items:        items,
+		Total:        total,
+	}, nil
+}
+
+func toReceiptItem(items []processReceiptReqItem) ([]model.Item, error) {
+	modelItems := make([]model.Item, 0, len(items))
+	for _, item := range items {
+		price, err := strconv.ParseFloat(item.Price, 64)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid price format")
+		}
+		modelItems = append(modelItems, model.Item{
+			ShortDescription: item.ShortDescription,
+			Price:            price,
+		})
+	}
+	return modelItems, nil
 }
