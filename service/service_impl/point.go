@@ -39,7 +39,7 @@ func (*pointServiceImpl) CalculatePoints(receipt *model.Receipt) int64 {
 		if trimmedLen%3 != 0 {
 			continue
 		}
-		points += int64(item.Price * 0.2)
+		points += int64(math.Ceil(item.Price * 0.2))
 	}
 
 	// #6 6 points if the day in the purchase date is odd.
