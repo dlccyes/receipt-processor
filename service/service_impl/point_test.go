@@ -8,9 +8,9 @@ import (
 
 func (s *Suite) TestCalculatePoints() {
 	point := s.PointService.CalculatePoints(&model.Receipt{
-		Retailer:     "a1234!()/;[]",                                 // #1 +5
-		PurchaseDate: test.MustParseTime("2022-01-01", "2006-01-02"), // #6 +6
-		PurchaseTime: test.MustParseTime("14:01", "15:04"),           // #7 +10
+		Retailer:     "a1234!()/;[]",                   // #1 +5
+		PurchaseDate: test.MustParseDate("2022-01-01"), // #6 +6
+		PurchaseTime: test.MustParseTime("14:01"),      // #7 +10
 		Items: []model.Item{ // #4 +5
 			{
 				ShortDescription: "123", // #5 +1

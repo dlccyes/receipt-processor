@@ -3,12 +3,13 @@ package handler
 import (
 	"net/http"
 
+	"github.com/dlccyes/receipt-processor/model"
 	"github.com/dlccyes/receipt-processor/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func (s *Suite) TestProcessReceipt() {
-	receipt := &processReceiptReq{
+	req := &processReceiptReq{
 		Retailer:     "test seller",
 		PurchaseDate: "2022-01-02",
 		PurchaseTime: "18:01",
@@ -24,9 +25,25 @@ func (s *Suite) TestProcessReceipt() {
 		},
 		Total: "10.00",
 	}
-	s.mocks.ReceiptService.On("SaveReceipt", receipt).Return(int64(5))
+	expectedReceipt := &model.Receipt{
+		Retailer:     "test seller",
+		PurchaseDate: test.MustParseDate("2022-01-02"),
+		PurchaseTime: test.MustParseTime("18:01"),
+		Items: []model.Item{
+			{
+				ShortDescription: "test",
+				Price:            5.00,
+			},
+			{
+				ShortDescription: "test",
+				Price:            5.00,
+			},
+		},
+		Total: 10.00,
+	}
+	s.mocks.ReceiptService.On("SaveReceipt", expectedReceipt).Return(int64(5))
 
-	test.SetCtxRequestBody(s.c, receipt)
+	test.SetCtxRequestBody(s.c, req)
 	s.handler.ProcessReceipt(s.c)
 	assert.Equal(s.T(), http.StatusOK, s.w.Code)
 	assert.Equal(s.T(), "{\"id\":\"5\"}", s.w.Body.String())
