@@ -11,11 +11,11 @@ type Router struct {
 	Handler handler.Handler
 }
 
-func (r *Router) Run(addr string) error {
+func (r *Router) Init() *gin.Engine {
 	router := gin.Default()
 
 	router.POST("/receipts/process", r.Handler.ProcessReceipt)
 	router.GET("/receipts/:id/points", r.Handler.GetPoints)
 
-	return router.Run(addr)
+	return router
 }

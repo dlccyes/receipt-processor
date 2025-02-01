@@ -11,20 +11,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-type processReceiptReq struct {
+type ProcessReceiptReq struct {
 	Retailer     string                  `json:"retailer" binding:"required"`
 	PurchaseDate string                  `json:"purchaseDate" binding:"required"`
 	PurchaseTime string                  `json:"purchaseTime" binding:"required"`
-	Items        []processReceiptReqItem `json:"items" binding:"required"`
+	Items        []ProcessReceiptReqItem `json:"items" binding:"required"`
 	Total        string                  `json:"total" binding:"required"`
 }
 
-type processReceiptReqItem struct {
+type ProcessReceiptReqItem struct {
 	ShortDescription string `json:"shortDescription" binding:"required"`
 	Price            string `json:"price" binding:"required"`
 }
 
-type processReceiptResp struct {
+type ProcessReceiptResp struct {
 	ID string `json:"id"`
 }
 
@@ -33,7 +33,7 @@ var (
 )
 
 func (h *Handler) ProcessReceipt(c *gin.Context) {
-	var req processReceiptReq
+	var req ProcessReceiptReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The receipt is invalid: " + err.Error()})
 		return
@@ -48,10 +48,10 @@ func (h *Handler) ProcessReceipt(c *gin.Context) {
 	}
 	receiptID := h.ReceiptService.SaveReceipt(receipt)
 
-	c.JSON(http.StatusOK, processReceiptResp{ID: strconv.FormatInt(receiptID, 10)})
+	c.JSON(http.StatusOK, ProcessReceiptResp{ID: strconv.FormatInt(receiptID, 10)})
 }
 
-func validateReceipt(receipt processReceiptReq) error {
+func validateReceipt(receipt ProcessReceiptReq) error {
 	if receipt.Retailer == "" || receipt.PurchaseDate == "" || receipt.PurchaseTime == "" || len(receipt.Items) == 0 || receipt.Total == "" {
 		return errors.New("incomplete receipt")
 	}
@@ -66,7 +66,7 @@ func validateReceipt(receipt processReceiptReq) error {
 	return nil
 }
 
-func toReceipt(req processReceiptReq) (*model.Receipt, error) {
+func toReceipt(req ProcessReceiptReq) (*model.Receipt, error) {
 	purchaseDate, err := time.Parse("2006-01-02", req.PurchaseDate)
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid purchase date")
@@ -92,7 +92,7 @@ func toReceipt(req processReceiptReq) (*model.Receipt, error) {
 	}, nil
 }
 
-func toReceiptItem(items []processReceiptReqItem) ([]model.Item, error) {
+func toReceiptItem(items []ProcessReceiptReqItem) ([]model.Item, error) {
 	modelItems := make([]model.Item, 0, len(items))
 	for _, item := range items {
 		price, err := strconv.ParseFloat(item.Price, 64)

@@ -11,7 +11,7 @@ func main() {
 	container := dig.New()
 	service_impl.Bind(container)
 	di.MustInvoke(container, func(router api.Router) {
-		if err := router.Run(":8080"); err != nil {
+		if err := router.Init().Run(":8080"); err != nil {
 			panic(err)
 		}
 	})

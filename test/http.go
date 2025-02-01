@@ -18,8 +18,12 @@ func SetupHttpTest() (*gin.Context, *httptest.ResponseRecorder) {
 
 func SetCtxRequestBody(c *gin.Context, v interface{}) {
 	c.Request = &http.Request{
-		Body: io.NopCloser(bytes.NewBuffer(marshalStructToJSON(v))),
+		Body: io.NopCloser(ToRequestBody(v)),
 	}
+}
+
+func ToRequestBody(v interface{}) io.Reader {
+	return bytes.NewBuffer(marshalStructToJSON(v))
 }
 
 func marshalStructToJSON(v interface{}) []byte {
