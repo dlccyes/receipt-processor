@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/dlccyes/receipt-processor/model"
-	"github.com/dlccyes/receipt-processor/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,7 +29,7 @@ func (h *Handler) ProcessReceipt(c *gin.Context) {
 		return
 	}
 
-	receiptID := service.SaveReceipt(&receipt)
+	receiptID := h.ReceiptService.SaveReceipt(&receipt)
 
 	c.JSON(http.StatusOK, ReceiptIDResponse{ID: receiptID})
 }

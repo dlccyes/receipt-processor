@@ -1,4 +1,4 @@
-package service
+package service_impl
 
 import (
 	"errors"
@@ -8,8 +8,10 @@ import (
 	"github.com/dlccyes/receipt-processor/model"
 )
 
+type pointServiceImpl struct{}
+
 // TODO: refactor
-func CalculatePoints(receipt *model.Receipt) int64 {
+func (*pointServiceImpl) CalculatePoints(receipt *model.Receipt) int64 {
 	var points int64 = 0
 
 	// Rule 1: One point for every alphanumeric character in the retailer name.
