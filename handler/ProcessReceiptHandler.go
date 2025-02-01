@@ -19,7 +19,7 @@ var (
 	retailerPattern = regexp.MustCompile(`^[\w\s\-&]+$`)
 )
 
-func ProcessReceipt(c *gin.Context) {
+func (h *Handler) ProcessReceipt(c *gin.Context) {
 	var receipt model.Receipt
 	if err := c.ShouldBindJSON(&receipt); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The receipt is invalid: " + err.Error()})
