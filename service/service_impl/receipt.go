@@ -11,15 +11,15 @@ var (
 	receipts = make(map[int64]*model.Receipt)
 )
 
-func (*receiptServiceImpl) SaveReceipt(receipt *model.Receipt) int64 {
-	id += 1
-	receipts[id] = receipt
-	return id
-}
-
 func (*receiptServiceImpl) GetReceipt(id int64) (*model.Receipt, bool) {
 	if receipt, exists := receipts[id]; exists {
 		return receipt, true
 	}
 	return nil, false
+}
+
+func (*receiptServiceImpl) SaveReceipt(receipt *model.Receipt) int64 {
+	id += 1
+	receipts[id] = receipt
+	return id
 }

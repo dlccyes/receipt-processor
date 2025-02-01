@@ -16,6 +16,7 @@ func (h *Handler) GetPoints(c *gin.Context) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The ID is invalid: " + err.Error()})
+		return
 	}
 	receipt, exist := h.ReceiptService.GetReceipt(id)
 	if !exist {

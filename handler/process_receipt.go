@@ -37,7 +37,7 @@ func (h *Handler) ProcessReceipt(c *gin.Context) {
 
 func validateReceipt(receipt model.Receipt) error {
 	if receipt.Retailer == "" || receipt.PurchaseDate == "" || receipt.PurchaseTime == "" || len(receipt.Items) == 0 || receipt.Total == "" {
-		return errors.New("empty receipt")
+		return errors.New("incomplete receipt")
 	}
 	if !retailerPattern.MatchString(receipt.Retailer) {
 		return errors.New("invalid retailer format")
