@@ -3,16 +3,12 @@ package api
 import (
 	"github.com/dlccyes/receipt-processor/handler"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/dig"
 )
 
 type Router struct {
-	Handler *handler.Handler
-}
-
-func NewRouter(handler *handler.Handler) *Router {
-	return &Router{
-		Handler: handler,
-	}
+	dig.In
+	Handler handler.Handler
 }
 
 func (r *Router) Run(addr string) error {
